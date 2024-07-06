@@ -1,0 +1,47 @@
+FROM composer:latest AS builder
+
+WORKDIR /app
+
+# Instalar dependências do Composer
+RUN composer require --dev phpunit/phpunit:^10.5 --no-interaction --no-plugins --no-scripts \
+    && composer require guzzlehttp/guzzle:^7.0 --no-interaction --no-plugins --no-scripts \
+    && composer update --lock \
+    && composer dump-autoload --no-interaction --optimize \
+    && cat composer.json
+
+FROM php:8.3-fpm
+
+WORKDIR /var/www/html
+
+# Copiar código fonte para o diretório de trabalho
+COPY . /var/www/html
+
+# Instalar dependências do sistema
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    unzip \
+    zip \
+    && docker-php-ext-install zip pdo pdo_mysql \
+    && apt-get clean
+
+# Alternar para um usuário não-root
+RUN useradd -m composeruser \
+    && chown -R composeruser:composeruser /var/www/html
+
+# Copiar dependências do Composer do estágio anterior
+COPY --from=builder /app/vendor /var/www/html/vendor
+
+# Verificar se o arquivo composer.json é válido
+RUN touch /var/www/html/composer.json
+RUN touch /var/www/html/composer.lock
+
+RUN echo --from=builder /app/composer.json > /var/www/html/composer.json
+RUN echo --from=builder /app/composer.lock > /var/www/html/composer.lock
+
+# Alterar para o usuário 'composeruser' para operações seguras
+USER composeruser
+
+# Instalar dependências adicionais do Composer, se necessário
+RUN composer require --dev phpunit/phpunit:^10.5 --no-interaction --no-plugins --no-scripts \
+    && composer require guzzlehttp/guzzle:^7.0 --no-interaction --no-plugins --no-scripts \
+    && composer update --lock --no-interaction

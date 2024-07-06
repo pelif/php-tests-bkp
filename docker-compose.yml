@@ -1,0 +1,54 @@
+version: '3'
+services:
+
+  web: 
+    container_name: nginx_tests_php_bkp
+    build: 
+      context: .
+      dockerfile: nginx.Dockerfile
+    restart: always
+    ports: 
+        - "80:80"
+    volumes: 
+        - "./:/var/www/html"        
+    links: 
+        - app
+    networks: 
+      phpTestsBkp: 
+        ipv4_address: 192.20.0.3
+
+
+  app: 
+    container_name: app_tests_php_bkp    
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    volumes: 
+      - .:/var/www/html      
+    depends_on: 
+      - db
+    networks: 
+      phpTestsBkp: 
+        ipv4_address: 192.20.0.4
+
+
+  db: 
+    image: mysql:5.7
+    container_name: mysql_tests_php_bkp
+    ports: 
+      - "3306:3306"
+    environment: 
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testes_php
+    networks: 
+      phpTestsBkp: 
+        ipv4_address: 192.20.0.5
+
+
+networks:
+  phpTestsBkp: 
+    driver: bridge
+    ipam:
+      config: 
+        - subnet: 192.20.0.0/16
