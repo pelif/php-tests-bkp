@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\Connection\MysqlConnection;
 use PDO;
 
-class CustomerRepository
+class CustomerRepository implements CustomerRepositoryInterface
 {
     private ?PDO $conn = null;
 
@@ -16,7 +16,7 @@ class CustomerRepository
 
     public function getCustomers(): array
     {
-        $sql = "SELECT * FROM customers";
+        $sql = "SELECT * FROM customers ORDER BY name ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll();
@@ -32,22 +32,22 @@ class CustomerRepository
         return $stmt->fetchAll();
     }
 
-    public function insertCustomer(string $name, string $email): bool
+    public function insertCustomer(array $data): bool
     {        
         $stmt = $this->conn->prepare("INSERT INTO customers (name, email) VALUES (:name, :email)");        
-        $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':name', $data['name']);
+        $stmt->bindParam(':email', $data['email']);
         return $stmt->execute();
     }
 
-    public function updateCustomer(int $id, string $name, string $email): bool
+    public function updateCustomer(array $data): bool
     {
         $sql = "UPDATE customers SET name = :name, email = :email WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([
-            ':name' => $name, 
-            ':email' => $email, 
-            ':id' => $id
+            ':name' => $data['name'], 
+            ':email' => $data['email'], 
+            ':id' => $data['id']
         ]);
     }
 

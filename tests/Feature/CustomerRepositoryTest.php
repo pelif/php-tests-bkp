@@ -32,7 +32,8 @@ Class CustomerRepositoryTest extends TestCase
 
         $name = 'John Doe';
         $email = 'XqgHJ@example.com';
-        $customer = $repository->insertCustomer($name, $email);
+        $data = ['name' => $name, 'email' => $email];
+        $customer = $repository->insertCustomer($data);
         $this->assertTrue($customer); 
 
         $stmt = $this->conn->query("SELECT * FROM customers WHERE email = 'XqgHJ@example.com'");
@@ -50,13 +51,15 @@ Class CustomerRepositoryTest extends TestCase
 
         $name = 'John Doe';
         $email = 'XqgHJ@example.com';
-        $customer = $repository->insertCustomer($name, $email); 
+        $data = ['name' => $name, 'email' => $email];
+        $customer = $repository->insertCustomer($data); 
                 
         $id = $this->conn->lastInsertId();
         $updatedName = "John Doe";
         $updatedEmail = "john.doe@example.com";
         
-        $result = $repository->updateCustomer($id, $updatedName, $updatedEmail);
+        $data = ['id' => $id, 'name' => $updatedName, 'email' => $updatedEmail];
+        $result = $repository->updateCustomer($data);
                
         $this->assertTrue($result);
         
@@ -74,7 +77,8 @@ Class CustomerRepositoryTest extends TestCase
 
         $name = 'John Doe';
         $email = 'XqgHJ@example.com';
-        $customer = $repository->insertCustomer($name, $email); 
+        $data = ['name' => $name, 'email' => $email];
+        $customer = $repository->insertCustomer($data); 
                 
         $id = $this->conn->lastInsertId();
         

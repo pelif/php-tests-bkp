@@ -4,41 +4,63 @@ require __DIR__ . '/vendor/autoload.php';
 
 use App\Controllers\CustomerController;
 use App\Enums\HttpMethod;
+use App\Repositories\CustomerRepository;
 use GuzzleHttp\Client;
 
-// $requestUri = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
-// $method = HttpMethod::tryFrom($_SERVER['REQUEST_METHOD']);
+$requestUri = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
+$method = HttpMethod::tryFrom($_SERVER['REQUEST_METHOD']);
 
 $client = new Client();
-var_dump($client); 
 
-// if($requestUri[0] === 'customer')  {
-    
-//     $customerController = new CustomerController();
+if($requestUri[0] === 'customers')  {
 
-//     if(!$method) {
-//         http_response_code(405);
-//         echo json_encode([
-//             'message' => 'Method not allowed'
-//         ]); 
-//         exit();
-//     }
+    $customerController = new CustomerController(new CustomerRepository);
+    $customerController->handleRequest();
 
-//     switch($method) {
-//         case HttpMethod::GET:
-//             if(isset($requestUri[1])) {
-//                 $customerController->show($requestUri[1]);
-//             } else {
-//                 $customerController->index();
-//             }            
-//             break;
+    if(!$method) {
+        http_response_code(405);
+        echo json_encode([
+            'message' => 'Method not allowed'
+        ]); 
+        exit();
+    }
 
+    switch($method) {
+        case HttpMethod::GET:
+            if(isset($requestUri[1])) {
+                echo $customerController->show($requestUri[1]);
+            } else {                         
+                echo $customerController->index();
+            }            
+            break;
 
-//         default:
-//             http_response_code(405);
-//             echo json_encode([
-//                 'message' => 'Method not allowed'
-//             ]); 
-//             exit();
-//     }
-// } 
+        case HttpMethod::POST:
+            echo $customerController->create($body);
+            break;
+
+        case HttpMethod::PUT:
+            if(isset($requestUri[1])) {
+                echo $customerController->update($body);
+            } else {
+                http_response_code(400);
+                echo json_encode(['message' => 'ID is required for update']);
+            }
+            break;
+
+        case HttpMethod::DELETE:
+            if(isset($requestUri[1])) {
+                echo $customerController->delete((int) $requestUri[1]);
+            } else {
+                http_response_code(400);
+                echo json_encode(['message' => 'ID is required for delete']);
+            }
+            break;
+
+        default:
+            http_response_code(405);
+            echo json_encode([
+                'message' => 'Method not allowed'
+            ]); 
+            exit();
+    }
+} 
