@@ -26,7 +26,7 @@ class CustomerApiTest extends TestCase
             ]                   
         ]);  
 
-        $this->assertEquals(200, $response->getStatusCode());        
+        $this->assertEquals(200, $response->getStatusCode());    
         $this->assertStringContainsString("John Doe", $response->getBody()->getContents());
     }
     
@@ -37,5 +37,31 @@ class CustomerApiTest extends TestCase
         $this->assertIsString($response->getBody()->getContents());      
     }
 
+    public function testShow(): void
+    {
+        $response = $this->client->get('customers/3');
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertStringContainsString("John Doe", $response->getBody()->getContents());
+    }
+
+    public function testUpdateCustomer(): void
+    {
+        $response = $this->client->request('PUT', 'customers/3', [     
+            'json' => [
+                'name' => 'Pelif Elnida',
+                'email' => 'pelifelnida@example.com'
+            ]                   
+        ]);  
+        
+        $this->assertEquals(200, $response->getStatusCode());  
+        $this->assertStringContainsString("Customer updated with success", $response->getBody()->getContents());
+    }
+
+    public function testDeleteCustomer(): void
+    {
+        $response = $this->client->delete('customers/3');
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertStringContainsString("Customer deleted with success", $response->getBody()->getContents());
+    }
    
 }

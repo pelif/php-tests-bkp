@@ -15,13 +15,11 @@ $client = new Client();
 if($requestUri[0] === 'customers')  {
 
     $customerController = new CustomerController(new CustomerRepository);
-    $customerController->handleRequest();
+    // $customerController->handleRequest();
 
     if(!$method) {
         http_response_code(405);
-        echo json_encode([
-            'message' => 'Method not allowed'
-        ]); 
+        echo json_encode(['message' => 'Method not allowed']); 
         exit();
     }
 
@@ -35,11 +33,14 @@ if($requestUri[0] === 'customers')  {
             break;
 
         case HttpMethod::POST:
+            $body = json_decode(file_get_contents('php://input'), true);                
             echo $customerController->create($body);
             break;
 
         case HttpMethod::PUT:
             if(isset($requestUri[1])) {
+                $body = json_decode(file_get_contents('php://input'), true);                
+                $body['id'] = (int) $requestUri[1];                 
                 echo $customerController->update($body);
             } else {
                 http_response_code(400);
@@ -58,9 +59,7 @@ if($requestUri[0] === 'customers')  {
 
         default:
             http_response_code(405);
-            echo json_encode([
-                'message' => 'Method not allowed'
-            ]); 
+            echo json_encode(['message' => 'Method not allowed']); 
             exit();
     }
 } 

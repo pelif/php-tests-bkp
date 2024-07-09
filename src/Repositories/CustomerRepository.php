@@ -32,16 +32,20 @@ class CustomerRepository implements CustomerRepositoryInterface
         return $stmt->fetchAll();
     }
 
-    public function insertCustomer(array $data): bool
-    {        
+    public function insertCustomer(array|null $data): mixed
+    {           
         $stmt = $this->conn->prepare("INSERT INTO customers (name, email) VALUES (:name, :email)");        
         $stmt->bindParam(':name', $data['name']);
         $stmt->bindParam(':email', $data['email']);
-        return $stmt->execute();
+        
+        if($stmt->execute()) 
+            $this->findById((int) $this->conn->lastInsertId());
+        
+        return false;    
     }
 
     public function updateCustomer(array $data): bool
-    {
+    {        
         $sql = "UPDATE customers SET name = :name, email = :email WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([
